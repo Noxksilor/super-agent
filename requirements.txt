@@ -1,0 +1,3 @@
+# Super Agent Requirements
+# No external dependencies - uses only Python standard library
+# Optional development dependencies can be installed with: pip install -e ".[dev]"
