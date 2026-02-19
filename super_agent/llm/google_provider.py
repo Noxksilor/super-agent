@@ -99,17 +99,19 @@ class GoogleProvider(BaseLLM):
         for tool in tools:
             # Convert to Google function declaration format
             if 'name' in tool:
+                parameters = self._clean_schema_for_gemini(tool.get('parameters', {}))
                 func_decl = {
                     "name": tool.get('name', ''),
                     "description": tool.get('description', ''),
-                    "parameters": tool.get('parameters', {})
+                    "parameters": parameters
                 }
             elif 'function' in tool:
                 func = tool['function']
+                parameters = self._clean_schema_for_gemini(func.get('parameters', {}))
                 func_decl = {
                     "name": func.get('name', ''),
                     "description": func.get('description', ''),
-                    "parameters": func.get('parameters', {})
+                    "parameters": parameters
                 }
             else:
                 continue
@@ -122,6 +124,34 @@ class GoogleProvider(BaseLLM):
             })
         
         return google_tools
+    
+    def _clean_schema_for_gemini(self, schema: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Clean JSON schema to be compatible with Google Gemini API.
+        Removes fields not supported by Gemini like 'additionalProperties'.
+        """
+        if not isinstance(schema, dict):
+            return schema
+        
+        # Fields that Gemini doesn't support
+        unsupported_fields = {'additionalProperties', '$schema', '$id', '$ref'}
+        
+        cleaned = {}
+        for key, value in schema.items():
+            if key in unsupported_fields:
+                continue
+            
+            if isinstance(value, dict):
+                cleaned[key] = self._clean_schema_for_gemini(value)
+            elif isinstance(value, list):
+                cleaned[key] = [
+                    self._clean_schema_for_gemini(item) if isinstance(item, dict) else item
+                    for item in value
+                ]
+            else:
+                cleaned[key] = value
+        
+        return cleaned
     
     def _parse_response(self, result: Dict[str, Any]) -> LLMResponse:
         """Parse Google Gemini response"""
