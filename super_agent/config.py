@@ -105,7 +105,7 @@ def load_config(config_path: Optional[str] = None) -> AgentConfig:
         config.llm.model = "claude-3-sonnet-20240229"
     elif os.environ.get('GOOGLE_API_KEY') and not os.environ.get('OPENAI_API_KEY'):
         config.llm.provider = "google"
-        config.llm.model = "gemini-pro"
+        config.llm.model = "gemini-1.5-flash"
     
     return config
 

@@ -14,7 +14,7 @@ class GoogleProvider(BaseLLM):
     
     API_URL_TEMPLATE = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
     
-    def __init__(self, api_key: str, model: str = "gemini-pro", **kwargs):
+    def __init__(self, api_key: str, model: str = "gemini-1.5-flash", **kwargs):
         super().__init__(api_key, model, **kwargs)
         self.max_tokens = kwargs.get('max_tokens', 4096)
         self.temperature = kwargs.get('temperature', 0.7)
