@@ -81,36 +81,43 @@ def load_config(config_path: Optional[str] = None) -> AgentConfig:
                 setattr(config, key, data[key])
     
     # Override with environment variables
-    env_mappings = {
-        'OPENAI_API_KEY': ('llm', 'api_key'),
-        'ANTHROPIC_API_KEY': ('llm', 'api_key'),
-        'GOOGLE_API_KEY': ('llm', 'api_key'),
-        'LLM_PROVIDER': ('llm', 'provider'),
-        'LLM_MODEL': ('llm', 'model'),
-        'PS_AGENT_MVP_PATH': (None, 'ps_agent_mvp_path'),
-        'N8N_ENDPOINT': (None, 'n8n_endpoint'),
-    }
+    # Only apply API keys if provider is NOT ollama
+    if config.llm.provider != "ollama":
+        env_mappings = {
+            'OPENAI_API_KEY': ('llm', 'api_key'),
+            'ANTHROPIC_API_KEY': ('llm', 'api_key'),
+            'GOOGLE_API_KEY': ('llm', 'api_key'),
+        }
+        
+        for env_var, (subconfig, attr) in env_mappings.items():
+            value = os.environ.get(env_var)
+            if value:
+                if subconfig:
+                    getattr(config, subconfig).__setattr__(attr, value)
+                else:
+                    setattr(config, attr, value)
+        
+        # Auto-detect provider from API key (only if explicitly set)
+        if os.environ.get('OPENAI_API_KEY'):
+            config.llm.provider = "openai"
+            config.llm.model = "gpt-4o-mini"
+            config.llm.api_key = os.environ.get('OPENAI_API_KEY')
+        elif os.environ.get('ANTHROPIC_API_KEY'):
+            config.llm.provider = "anthropic"
+            config.llm.model = "claude-3-sonnet-20240229"
+        elif os.environ.get('GOOGLE_API_KEY'):
+            config.llm.provider = "google"
+            config.llm.model = "gemini-1.5-flash"
     
-    for env_var, (subconfig, attr) in env_mappings.items():
-        value = os.environ.get(env_var)
-        if value:
-            if subconfig:
-                getattr(config, subconfig).__setattr__(attr, value)
-            else:
-                setattr(config, attr, value)
-    
-    # Auto-detect provider from API key (only if explicitly set)
-    # Ollama is the default and doesn't need API key
-    if os.environ.get('OPENAI_API_KEY'):
-        config.llm.provider = "openai"
-        config.llm.model = "gpt-4o-mini"
-        config.llm.api_key = os.environ.get('OPENAI_API_KEY')
-    elif os.environ.get('ANTHROPIC_API_KEY'):
-        config.llm.provider = "anthropic"
-        config.llm.model = "claude-3-sonnet-20240229"
-    elif os.environ.get('GOOGLE_API_KEY'):
-        config.llm.provider = "google"
-        config.llm.model = "gemini-1.5-flash"
+    # Always allow these env vars regardless of provider
+    if os.environ.get('LLM_PROVIDER'):
+        config.llm.provider = os.environ.get('LLM_PROVIDER')
+    if os.environ.get('LLM_MODEL'):
+        config.llm.model = os.environ.get('LLM_MODEL')
+    if os.environ.get('PS_AGENT_MVP_PATH'):
+        config.ps_agent_mvp_path = os.environ.get('PS_AGENT_MVP_PATH')
+    if os.environ.get('N8N_ENDPOINT'):
+        config.n8n_endpoint = os.environ.get('N8N_ENDPOINT')
     
     return config
 
