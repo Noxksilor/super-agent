@@ -92,5 +92,8 @@ def get_llm_provider(provider: str, api_key: str, model: str, **kwargs) -> 'Base
     elif provider == "google":
         from .google_provider import GoogleProvider
         return GoogleProvider(api_key, model, **kwargs)
+    elif provider == "ollama":
+        from .ollama_provider import OllamaProvider
+        return OllamaProvider(api_key, model, **kwargs)
     else:
         raise ValueError(f"Unknown LLM provider: {provider}")

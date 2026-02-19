@@ -7,8 +7,8 @@
   "ps_agent_mvp_path": "C:\\ps_jobs\\job_0001",
   "n8n_endpoint": "http://localhost:5678",
   "llm": {
-    "provider": "openai",
-    "model": "gpt-4o-mini",
+    "provider": "ollama",
+    "model": "llama3.2:3b",
     "max_tokens": 4096,
     "temperature": 0.7
   },

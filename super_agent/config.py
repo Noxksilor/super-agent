@@ -12,9 +12,9 @@ import json
 @dataclass
 class LLMConfig:
     """LLM provider configuration"""
-    provider: str = "openai"  # openai, anthropic, google
+    provider: str = "ollama"  # openai, anthropic, google, ollama
     api_key: str = ""
-    model: str = "gpt-4o-mini"
+    model: str = "llama3.2:3b"
     max_tokens: int = 4096
     temperature: float = 0.7
 
@@ -99,11 +99,16 @@ def load_config(config_path: Optional[str] = None) -> AgentConfig:
             else:
                 setattr(config, attr, value)
     
-    # Auto-detect provider from API key
-    if os.environ.get('ANTHROPIC_API_KEY') and not os.environ.get('OPENAI_API_KEY'):
+    # Auto-detect provider from API key (only if explicitly set)
+    # Ollama is the default and doesn't need API key
+    if os.environ.get('OPENAI_API_KEY'):
+        config.llm.provider = "openai"
+        config.llm.model = "gpt-4o-mini"
+        config.llm.api_key = os.environ.get('OPENAI_API_KEY')
+    elif os.environ.get('ANTHROPIC_API_KEY'):
         config.llm.provider = "anthropic"
         config.llm.model = "claude-3-sonnet-20240229"
-    elif os.environ.get('GOOGLE_API_KEY') and not os.environ.get('OPENAI_API_KEY'):
+    elif os.environ.get('GOOGLE_API_KEY'):
         config.llm.provider = "google"
         config.llm.model = "gemini-1.5-flash"
     

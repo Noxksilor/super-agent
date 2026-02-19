@@ -135,11 +135,12 @@ def cmd_run(args) -> int:
     if args.max_iterations:
         config.max_iterations = args.max_iterations
     
-    # Check API key
-    if not config.llm.api_key:
+    # Check API key (skip for Ollama which doesn't need one)
+    if config.llm.provider != "ollama" and not config.llm.api_key:
         print("Error: No API key configured.")
         print("Set environment variable (OPENAI_API_KEY, ANTHROPIC_API_KEY, or GOOGLE_API_KEY)")
         print("Or use --config to specify a configuration file with api_key.")
+        print("For local Ollama, set provider to 'ollama'.")
         return 1
     
     # Create agent
@@ -187,10 +188,11 @@ def cmd_interactive(args) -> int:
     """Run in interactive mode"""
     config = load_config(args.config)
     
-    # Check API key
-    if not config.llm.api_key:
+    # Check API key (skip for Ollama which doesn't need one)
+    if config.llm.provider != "ollama" and not config.llm.api_key:
         print("Error: No API key configured.")
         print("Set environment variable (OPENAI_API_KEY, ANTHROPIC_API_KEY, or GOOGLE_API_KEY)")
+        print("For local Ollama, set provider to 'ollama'.")
         return 1
     
     agent = Agent(config)
