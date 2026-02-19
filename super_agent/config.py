@@ -14,7 +14,7 @@ class LLMConfig:
     """LLM provider configuration"""
     provider: str = "openai"  # openai, anthropic, google
     api_key: str = ""
-    model: str = "gpt-4"
+    model: str = "gpt-4o-mini"
     max_tokens: int = 4096
     temperature: float = 0.7
 
